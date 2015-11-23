@@ -62,11 +62,13 @@ class DownloadData(object):
 
     def download(self):
         stocks_id = self.get_stocks_id()
+        i = 1
         for sid in stocks_id:
             logging.info("downloading code %s" % (sid)) 
             self._merge_to_history(sid)
-
-            break
+            if i >4:
+                break
+            i = i+1
 
 
 
