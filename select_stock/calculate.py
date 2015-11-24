@@ -5,12 +5,17 @@ import glob
 import logging
 
 
+COLUMS = ["date","open","high","close","low","volume","amount"]
+
 class CalMoreInfo(object):
     """docstring for CalMoreInfo
     """
+    
+    
     def __init__(self):
         self.stockid = ""
         self.current_day = ""
+        self.outcolums = ""
         pass
 
     def calculate_advance_info(self, stock_advance_info):
@@ -20,6 +25,7 @@ class CalMoreInfo(object):
             if item[0] > self.current_day:
                 self.get_ma(i,stock_advance_info)
                 self.get_vol_increase(i, stock_advance_info)
+                self.get_close_increase(i, stock_advance_info)
 
 
     def get_stock_id(self):
@@ -29,6 +35,7 @@ class CalMoreInfo(object):
     def run(self):
         stock_list = self.get_stock_id()
         for filepath in stock_list:
+            self.outcolums = COLUMS
             self.stockid = filepath.split("/")[-1]
             stock_basic_info = self.read_basic_info(filepath)
             stock_advance_info = self.merge_advance_info(stock_basic_info)
@@ -82,10 +89,31 @@ class CalMoreInfo(object):
 
         return stock_advance_info
 
+
+    def get_close_increase(self, i, stock_advance_info):
+        mlist = [1,2,3,4,5,10,15,20,30,60,100,200,300]
+        for span in mlist:
+            key = "close_inc" + str(span)
+            if key not in set(self.outcolums):
+                self.outcolums.append(key)
+            
+            if i + span >= len(stock_advance_info):
+                stock_advance_info[i][1][key] = "Nan"
+                continue
+            
+            j = i + span
+            x = float(stock_advance_info[i][1]["close"])
+            y = float(stock_advance_info[j][1]["close"])
+
+            stock_advance_info[i][1][key] =  round((x-y)*100/y,2)
+
+
     def get_ma(self, i, stock_advance_info):
         mlist = [5,10,15,20,30,60,100,200,300]
         for span in mlist:
             key = "ma" + str(span)
+            if key not in set(self.outcolums):
+                self.outcolums.append(key)
             if i + span > len(stock_advance_info):
                 stock_advance_info[i][1][key] = "Nan"
                 continue
@@ -100,6 +128,8 @@ class CalMoreInfo(object):
         mlist = [1,2,3]
         for span in mlist:
             key = "vol_inc_" + str(span)
+            if key not in set(self.outcolums):
+                self.outcolums.append(key)
             if i + span >= len(stock_advance_info):
                 stock_advance_info[i][1][key] = "Nan"
                 continue
@@ -114,16 +144,13 @@ class CalMoreInfo(object):
 
     def write_all_data(self,stock_advance_info):
         f = open("./data/calculate/%s" % (self.stockid), "w")
-        colums = stock_advance_info[-1][1].keys()
-        colums.sort()
-        colums.remove("date")
-        f.write("date,"+",".join(colums) +"\n")
-
+        print ",".join(self.outcolums)
+        f.write(",".join(self.outcolums)+"\n")
         for x in stock_advance_info:
             printlist = []
-            for key in colums:
+            for key in self.outcolums:
                 printlist.append(str(x[1][key]))
-            f.write( x[0]+","+",".join(printlist) +"\n")
+            f.write( ",".join(printlist) +"\n")
 
 
 if __name__ == '__main__':

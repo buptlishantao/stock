@@ -76,5 +76,3 @@ class DownloadData(object):
 if __name__ == '__main__':
     DL = DownloadData()
     DL.download()
-        
-
