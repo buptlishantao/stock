@@ -1,8 +1,8 @@
+import os
 import sys
 import time
+import glob
 import datetime
-
-
 
 def get_today_str():
     today = datetime.date.today()
@@ -31,8 +31,32 @@ def get_date_from(c_day, delta_days):
     return day_ago.strftime("%Y-%m-%d")
 
 
+def list_file(path):
+    for filename in os.listdir(path):
+        print filename
+
+def list_file_path(path):
+    filelist = glob.glob(path)
+    print filelist
+    """
+    for f in filelist:
+        print f
+    """
+
+def read_csv(path):
+    for filename in os.listdir("./data/info"):
+        stock_ids.append(filename)
+        f = open("/".join(["./data/info",filename]))
+        colums = f.next().strip().split(",")
+        stock_basic_info[filename] = []
+        for line in f:
+            items = line.strip().split(",")
+            date = items[0]
+            info = dict(zip(colums,items))
+            stock_basic_info[filename].append((date, info))
+
 if __name__ == '__main__':
     #print get_today_str()
-    print get_date_from("2015-11-11",1)
-
-
+    #print get_date_from("2015-11-11",1)
+    #print list_file("./data/info/")
+    print list_file_path("./data/info/")
