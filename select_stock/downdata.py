@@ -24,10 +24,13 @@ class DownloadData(object):
 
     def _get_stock_info_save(self, sid, begin_day, stock_info):
         logging.error(begin_day+"\t" + sid)
+        if begin_day == self.today:
+            return
         sinfo = ts.get_h_data(sid,start = begin_day, end=self.today)
+        if sinfo is None:
+            return
         if stock_info is None:
             sinfo.to_csv("data/info/%s" %(sid))
-        
         else:
             sinfo.to_csv("tmp")
             sinfo = pd.read_csv("tmp")
@@ -53,8 +56,6 @@ class DownloadData(object):
         return begin_day, stock_info
 
 
-        
-
     def _merge_to_history(self, sid):
         begin_day,  stock_info = self._get_history_data(sid)
         self._get_stock_info_save(sid, begin_day, stock_info)
@@ -65,11 +66,10 @@ class DownloadData(object):
         i = 1
         for sid in stocks_id:
             logging.info("downloading code %s" % (sid)) 
-            self._merge_to_history(sid)
-            if i >4:
+            self._merge_to_history(sid)            
+            if i >1000:
                 break
             i = i+1
-
 
 
 

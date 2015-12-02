@@ -16,20 +16,43 @@ class CalMoreInfo(object):
         self.stockid = ""
         self.current_day = ""
         self.outcolums = ""
-        pass
 
     def calculate_advance_info(self, stock_advance_info):
-        print self.stockid
-        print self.current_day
+        #print self.stockid,self.current_day
         for i,item in enumerate(stock_advance_info):
             if item[0] > self.current_day:
                 self.get_ma(i,stock_advance_info)
                 self.get_vol_increase(i, stock_advance_info)
                 self.get_close_increase(i, stock_advance_info)
 
+    def calculate_feature_info(self,stock_advance_info):
+        for i,item in enumerate(stock_advance_info):
+            if item[0] > self.current_day:
+                self.get_if_yangxian(i,stock_advance_info)
+                self.get_zhengli(i,stock_advance_info)
+                self.get_junxiannianlian(i,stock_advance_info)
+                self.get_if_fangliang(i,stock_advance_info)
 
     def get_stock_id(self):
         return glob.glob("./data/info/*")
+
+
+
+    def if_can_buy(self,stock_advance_info):
+        for i,item in enumerate(stock_advance_info):
+            if stock_advance_info[i][1]["if_yangxian"]=="True" \
+               and stock_advance_info[i][1]["shiti_bili"] > 0.7 \
+               and stock_advance_info[i][1]["zhengli"] < 0.03 \
+               and stock_advance_info[i][1]["vol_inc_1"] > 30 \
+               and stock_advance_info[i][1]["jxnl"] == "True" \
+               and stock_advance_info[i][1]["if_fangliang"] == "True":
+
+               print "buy next","\t".join([stock_advance_info[i][0],self.stockid])
+
+                
+
+    def if_can_sale(self):
+        pass
 
 
     def run(self):
@@ -40,10 +63,12 @@ class CalMoreInfo(object):
             stock_basic_info = self.read_basic_info(filepath)
             stock_advance_info = self.merge_advance_info(stock_basic_info)
             self.calculate_advance_info(stock_advance_info)
+            self.calculate_feature_info(stock_advance_info)
             self.write_all_data(stock_advance_info)
 
-    def get_advance_day(self):
-        pass
+            self.if_can_buy(stock_advance_info)
+            #break
+
 
     def read_basic_info(self, filepath):
         stock_basic_info = []
@@ -90,6 +115,93 @@ class CalMoreInfo(object):
         return stock_advance_info
 
 
+    def get_if_fangliang(self,i,stock_advance_info):
+
+        key = "if_fangliang"
+        if key not in set(self.outcolums):
+            self.outcolums.append(key)
+
+        span = 10
+        if i + span >= len(stock_advance_info):
+            stock_advance_info[i][1][key] = "Nan"
+            return
+
+        volume_list = []
+        for j in range(i,i+span):
+            volume_list.append(float(stock_advance_info[j][1]["volume"]))
+            
+        if (max(volume_list) == float(stock_advance_info[i][1]["volume"])):
+            stock_advance_info[i][1][key] = "True"
+        else:
+            stock_advance_info[i][1][key] = "False"
+
+        
+
+    def get_zhengli(self, i, stock_advance_info):
+        
+        key = "zhengli"
+        if key not in set(self.outcolums):
+            self.outcolums.append(key)
+        
+        if i + 20 >= len(stock_advance_info):
+            stock_advance_info[i][1][key] = "Nan"
+            return
+        
+        close = float(stock_advance_info[i][1]["close"])
+        open = float(stock_advance_info[i][1]["open"])
+        high = float(stock_advance_info[i][1]["high"])
+        low = float(stock_advance_info[i][1]["low"])
+        #print stock_advance_info[i+1][0]
+        #print stock_advance_info[i+1][1].keys()
+        
+        yesteday_ma20 = float(stock_advance_info[i+1][1]["ma20"])
+
+
+        change = (open - yesteday_ma20) / yesteday_ma20
+        stock_advance_info[i][1][key] = float(change)
+
+
+    def get_junxiannianlian(self, i, stock_advance_info):
+
+        key = "jxnl"
+        if key not in set(self.outcolums):
+            self.outcolums.append(key)
+
+        ma5 = float(stock_advance_info[i][1]["ma5"])
+        ma10 = float(stock_advance_info[i][1]["ma10"])
+        ma20 = float(stock_advance_info[i][1]["ma20"])
+            
+        if abs(ma10 - ma5)/ ma5 > 0.05 :
+            stock_advance_info[i][1][key] = "False"
+        if abs(ma10 - ma20)/ ma10 > 0.05:
+            stock_advance_info[i][1][key] = "False"
+
+        stock_advance_info[i][1][key] = "True"
+
+
+    def get_if_yangxian(self, i, stock_advance_info):
+        key1 = "if_yangxian"
+        key2 = "shiti_bili"
+        if key1 not in set(self.outcolums):
+            self.outcolums.append(key1)
+        if key2 not in set(self.outcolums):
+            self.outcolums.append(key2)
+        
+        
+        close = float(stock_advance_info[i][1]["close"])
+        _open = float(stock_advance_info[i][1]["open"])
+        high = float(stock_advance_info[i][1]["high"])
+        low = float(stock_advance_info[i][1]["low"])
+
+        if close > _open:
+            stock_advance_info[i][1][key1] = "True"
+        else:
+            stock_advance_info[i][1][key1] = "False"
+
+        stock_advance_info[i][1][key2] = (close - _open ) / (high - low + 0.0000001)
+
+
+
     def get_close_increase(self, i, stock_advance_info):
         mlist = [1,2,3,4,5,10,15,20,30,60,100,200,300]
         for span in mlist:
@@ -121,6 +233,7 @@ class CalMoreInfo(object):
             sum_p = 0.0
             for j in range(i,i+span):
                 sum_p += float(stock_advance_info[j][1]["close"])
+            #print stock_advance_info[i][0]
             stock_advance_info[i][1][key] = sum_p/ span
 
 
@@ -144,7 +257,7 @@ class CalMoreInfo(object):
 
     def write_all_data(self,stock_advance_info):
         f = open("./data/calculate/%s" % (self.stockid), "w")
-        print ",".join(self.outcolums)
+        #print ",".join(self.outcolums)
         f.write(",".join(self.outcolums)+"\n")
         for x in stock_advance_info:
             printlist = []
