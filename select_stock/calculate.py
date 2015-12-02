@@ -59,7 +59,7 @@ class CalMoreInfo(object):
         stock_list = self.get_stock_id()
         for filepath in stock_list:
             self.outcolums = COLUMS
-            self.stockid = filepath.split("/")[-1]
+            self.stockid = filepath.split("/")[-1][:-4]
             stock_basic_info = self.read_basic_info(filepath)
             stock_advance_info = self.merge_advance_info(stock_basic_info)
             self.calculate_advance_info(stock_advance_info)
@@ -87,7 +87,7 @@ class CalMoreInfo(object):
         stock_advance_info = []
 
         try:
-            f = open("./data/calculate/%s" % (self.stockid))
+            f = open("./data/calculate/%s.csv" % (self.stockid))
             colums = f.next().strip().split(",")
             #print colums
             for line in f:
@@ -256,7 +256,7 @@ class CalMoreInfo(object):
 
 
     def write_all_data(self,stock_advance_info):
-        f = open("./data/calculate/%s" % (self.stockid), "w")
+        f = open("./data/calculate/%s.csv" % (self.stockid), "w")
         #print ",".join(self.outcolums)
         f.write(",".join(self.outcolums)+"\n")
         for x in stock_advance_info:

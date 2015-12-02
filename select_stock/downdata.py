@@ -30,7 +30,7 @@ class DownloadData(object):
         if sinfo is None:
             return
         if stock_info is None:
-            sinfo.to_csv("data/info/%s" %(sid))
+            sinfo.to_csv("data/info/%s.csv" %(sid))
         else:
             sinfo.to_csv("tmp")
             sinfo = pd.read_csv("tmp")
@@ -39,7 +39,7 @@ class DownloadData(object):
             sinfo = pd.concat([sinfo,stock_info])
             #print sinfo
             #print stock_info
-            sinfo.to_csv("data/info/%s" %(sid),index = False)
+            sinfo.to_csv("data/info/%s.csv" %(sid),index = False)
         
 
 
@@ -47,7 +47,7 @@ class DownloadData(object):
     def _get_history_data(self, sid):
         begin_day = "2011-01-01"
         try:
-            stock_info = pd.read_csv("data/info/%s" %  (sid))
+            stock_info = pd.read_csv("data/info/%s.csv" %  (sid))
         except IOError as e:
             logging.error(e)
             return begin_day, None
@@ -67,7 +67,7 @@ class DownloadData(object):
         for sid in stocks_id:
             logging.info("downloading code %s" % (sid)) 
             self._merge_to_history(sid)            
-            if i >1000:
+            if i >10:
                 break
             i = i+1
 
