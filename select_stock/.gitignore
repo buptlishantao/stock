@@ -1,4 +1,2 @@
 *.a
-data/info/*
-data/calculate/*
 *.pyc
