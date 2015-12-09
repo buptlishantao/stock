@@ -43,6 +43,18 @@ def list_file_path(path):
         print f
     """
 
+def read_basic_info(filepath):
+    stock_basic_info = []
+    f = open(filepath)
+    colums = f.next().strip().split(",")
+    for line in f:
+        items = line.strip().split(",")
+        date = items[0]
+        info = dict(zip(colums,items))
+        stock_basic_info.append((date, info))
+
+    return stock_basic_info
+
 def read_csv(path):
     for filename in os.listdir("./data/info"):
         stock_ids.append(filename)

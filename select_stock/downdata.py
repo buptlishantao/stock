@@ -43,7 +43,6 @@ class DownloadData(object):
         
 
 
-
     def _get_history_data(self, sid):
         begin_day = "2011-01-01"
         try:

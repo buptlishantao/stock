@@ -63,10 +63,10 @@ class CalMoreInfo(object):
             stock_basic_info = self.read_basic_info(filepath)
             stock_advance_info = self.merge_advance_info(stock_basic_info)
             self.calculate_advance_info(stock_advance_info)
-            self.calculate_feature_info(stock_advance_info)
+            #self.calculate_feature_info(stock_advance_info)
             self.write_all_data(stock_advance_info)
 
-            self.if_can_buy(stock_advance_info)
+            #self.if_can_buy(stock_advance_info)
             #break
 
 
