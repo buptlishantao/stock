@@ -446,6 +446,7 @@ def _fun_except(x):
 
 
 def _parse_fq_data(url, index, retry_count, pause):
+    print url
     for _ in range(retry_count):
         time.sleep(pause)
         try:

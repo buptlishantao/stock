@@ -6,6 +6,7 @@ import util
 import pandas as pd
 import logging
 import os
+import time
 
 class DownloadData(object):
     """docstring for DownloadData"""
@@ -23,10 +24,15 @@ class DownloadData(object):
 
 
     def _get_stock_info_save(self, sid, begin_day, stock_info):
-        logging.error(begin_day+"\t" + sid)
-        if begin_day == self.today:
+        logging.error(begin_day + "\t" + self.today +"\t" + sid)
+        #if begin_day == self.today:
+            #return
+        try:
+            logging.error("get data...")
+            sinfo = ts.get_h_data(sid,start = begin_day, end=self.today)
+        except:
             return
-        sinfo = ts.get_h_data(sid,start = begin_day, end=self.today)
+
         if sinfo is None:
             return
         if stock_info is None:
@@ -44,7 +50,7 @@ class DownloadData(object):
 
 
     def _get_history_data(self, sid):
-        begin_day = "2011-01-01"
+        begin_day = "2010-01-01"
         try:
             stock_info = pd.read_csv("data/info/%s.csv" %  (sid))
         except IOError as e:
@@ -64,11 +70,16 @@ class DownloadData(object):
         stocks_id = self.get_stocks_id()
         i = 1
         for sid in stocks_id:
-            logging.info("downloading code %s" % (sid)) 
-            self._merge_to_history(sid)            
-            if i >10:
+            logging.info("downloading code %s" % (sid))
+            self._merge_to_history(sid)
+            """
+            if i >200:
                 break
+            """
+            logging.error("already download %s stock" % (i))
+            #break
             i = i+1
+            time.sleep(1)
 
 
 
